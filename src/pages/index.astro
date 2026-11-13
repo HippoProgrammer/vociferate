@@ -4,9 +4,88 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
     <script>
+      const default_sentences =
+      `
+      Tu t’entends bien avec ta famille? (Pourquoi / Pourquoi pas
+      Comment est ta personnalité? Tu es comment?
+      Et tes amis, ils sont comment?
+      Et ta famille, elle est comment?
+      Qu’est-ce que tu as fait avec tes amis le week-end dernier?
+      Que vas-tu faire avec tes amis le week-end prochain?
+      Qu’est-ce que tu penses du mariage? Tu te marieras à l’avenir?
+
+      Qu'est-ce que tu manges et bois normalement?
+      As-tu un mode de vie sain? Pourquoi?
+      Quels seront tes projets pour rester en forme à l'avenir?
+      Parle-moi de ton programme sportif de la semaine derniere.
+      Le sport, c’est important pour toi?
+      Si tu avais plus de temps, que ferais-tu pour améliorer ta santé?
+
+      Quelles matières étudies-tu?
+      Quelle est ta matière préférée? Pourquoi?
+      Qu'est-ce que tu penses des règles scolaires?
+      Comment serait ton école idéale?
+      Si tu étais le directeur dans ton collège, qu’est-ce que tu ferais pour l’améliorer?
+      Qu’est-ce que tu vas faire après les examens?
+      Qu’est-ce que tu vas faire l’année prochaine?
+      Voudrais-tu aller à l’université? Pourquoi?
+      Quel métier voudrais-tu faire et pourquoi?
+      Quand tu étais petit, tu voulais faire quoi comme métier?
+      Est-ce que tu as fait un stage?
+      Est-ce que tu voudrais faire un stage?
+
+      Qu'est-ce que tu aimes comme films? Pourquoi?
+      Qu'est-ce que tu aimes comme émissions télé? Pourquoi?
+      Qu'est-ce que tu aimes comme musique? Pourquoi?
+      Qu'est-ce que tu vas regarder le week-end prochain?
+      Qu'est-ce que tu vas écouter le week-end prochain?
+      Décris un voyage récent que tu as fait.
+      Quels sports tu faisais quand tu étais jeune?
+      Quels sports tu as déjà essayé?
+      Tu aimes faire des sports extrêmes? pourquoi/pourquoi pas?
+
+      Quel est ta fête préférée et pourquoi?
+      Comment as-tu célébré ce jour, l'année dernière ? C'était comment?
+      Comment vas-tu fêter ton prochain anniversaire?
+      Aimerais-tu aller à un festival de musique? pourquoi/pourquoi pas?
+
+      Quels conseils donnerais-tu pour devenir célèbre?
+      Quels sont les avantages et les inconvénients d'être célèbre?
+      Tu ferais quoi pour être célèbre?
+      Parle-moi d'une célébrité francophone.
+      Est-ce que tu voulais être célèbre quand tu étais petit?
+      Tu veux être célèbre? Pourquoi / Pourquoi pas?
+
+      Où vas-tu en vacances normalement?
+      Qu’est-ce que tu aimes faire en vacances?
+      Où es-tu allé en vacances l’été dernier?
+      Si tu avais le choix, où voudrais-tu passer tes vacances?
+      Ou habitais-tu quand tu étais petit?
+      Voudrais-tu prendre une année sabbatique? pourquoi/pourquoi pas?
+
+      Comment utilises-tu Internet d'habitude?
+      Utiliseras-tu les réseaux sociaux ce soir?
+      Utiliseras-tu les réseaux sociaux ce week-end?
+      Es-tu pour ou contre les réseaux sociaux? Pourquoi?
+      Quand tu étais petit, passais-tu beaucoup de temps sur Internet?
+      As-tu utilisé les réseaux sociaux récemment?
+
+      Qu'est-ce que tu fais pour aider l'environnement?
+      Qu'est-ce qu'on pourrait faire pour aider l'environnement?
+      Quels sont les problèmes environnementaux principaux?
+      Quel est le plus grand problème de l’environnement dans ta ville?
+      Comment est ta ville? Tu aimes ta ville?
+      Qu’est-ce qu’il y a pour les jeunes?
+      Qu’est-ce qu’il y a pour les touristes?
+      Comment serait ta maison?
+      Comment serait ta ville idéale?
+      Si tu étais riche, où voudrais-tu habiter?
+      Qu'est-ce que tu as fait chez toi hier soir?
+      `;
       const synth = window.speechSynthesis;
       const sentences = document.querySelector("#sentences");
       const sentenceSubmit = document.querySelector("#sentenceSubmit");
+      const defaultSubmit = document.querySelector("#defaultSubmit");
       const warningBox = document.querySelector("#warningBox");
 
       const defaultPitch = 1;
@@ -36,7 +115,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
       function getRandomSentence() {
-        const possibleSentences = sentences.value.split("\n");
+        const possibleSentences = sentences.value.split("\n").flat();
         const randomSentence = possibleSentences[Math.floor(Math.random() * possibleSentences.length)];
         return randomSentence;
       }
@@ -46,7 +125,7 @@ import Layout from '../layouts/Layout.astro';
         sentenceSubmit.disabled = true;
         const sentenceSpeak = new SpeechSynthesisUtterance(getRandomSentence());
         const voice = getBestVoice();
-        if (voice == "0") {
+        if (voice == "0" || voice === undefined) {
           console.error("No speech synthesis voices found.")
           warningBox.textContent = "No speech synthesis voices found.";
           warningBox.style.color = "#ff4545";
@@ -69,6 +148,11 @@ import Layout from '../layouts/Layout.astro';
           warningBox.style.color = "#95a922";
         };
       });
+      defaultSubmit.addEventListener("click", function (e) {
+        sentences.value = default_sentences;
+        warningBox.textContent = "Filled default French sentences.";
+        warningBox.style.color = "#95a922";
+      });
     </script>
 
     <div id="main">
@@ -82,6 +166,8 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div id="submitArea">
                 <button id="sentenceSubmit" class="button">Speak</button>
+                <p>&emsp;</p>
+                <button id="defaultSubmit" class="button">Default Sentences</button>
                 <p>&emsp;</p>
                 <p id="warningBox"></p>
             </div>
@@ -136,7 +222,7 @@ body {
     margin: 0px;
 }
 
-#sentenceSubmit {
+.button {
     cursor: pointer;
     padding: .8em 1.2em;
     border: 2px solid;
