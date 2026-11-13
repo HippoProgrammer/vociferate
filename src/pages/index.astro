@@ -1,11 +1,150 @@
 ---
-import SentenceSpeaker from '../components/SentenceSpeaker.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-	<SentenceSpeaker />
+    <script>
+      const synth = window.speechSynthesis;
+      const sentences = document.querySelector("#sentences");
+      const sentenceSubmit = document.querySelector("#sentenceSubmit");
+      const warningBox = document.querySelector("#warningBox");
+
+      const defaultPitch = 1;
+      const defaultRate = 1;
+
+      function getBestVoice() {
+        const availableVoices = synth.getVoices();
+
+        var bestVoice;
+        var bestVoiceScore = 0;
+
+        for (const voice of availableVoices) {
+          var voiceScore = 0;
+          if (voice.lang == "fr_FR") {
+            voiceScore += 10
+          };
+          if (voice.default) {
+            voiceScore += 1
+          };
+
+          if (voiceScore >= bestVoiceScore) {
+            bestVoice = voice;
+            bestVoiceScore = voiceScore;
+          };
+        };
+        return bestVoice
+      }
+
+      function getRandomSentence() {
+        const possibleSentences = sentences.value.split("\n");
+        const randomSentence = possibleSentences[Math.floor(Math.random() * possibleSentences.length)];
+        return randomSentence;
+      }
+
+      /* fetch  */
+      sentenceSubmit.addEventListener("click", function (e) {
+        sentenceSubmit.disabled = true;
+        const sentenceSpeak = new SpeechSynthesisUtterance(getRandomSentence());
+        const voice = getBestVoice();
+        if (voice == "0") {
+          console.error("No speech synthesis voices found.")
+          warningBox.textContent = "No speech synthesis voices found.";
+          warningBox.style.color = "#ff4545";
+          return
+        } else if (voice.lang != "fr_FR") {
+          console.warning("No French speech synthesis voices found.");
+          warningBox.textContent = "No speech synthesis voices found.";
+          warningBox.style.color = "#ffd800";
+        } else {
+          warningBox.textContent = "Speaking...";
+          warningBox.style.color = "#95a922";
+        };
+        sentenceSpeak.voice = voice;
+        sentenceSpeak.pitch = defaultPitch;
+        sentenceSpeak.rate = defaultRate;
+        synth.speak(sentenceSpeak);
+        sentenceSpeak.onend = () => {
+          sentenceSubmit.disabled = false;
+          warningBox.textContent = "Finished speaking.";
+          warningBox.style.color = "#95a922";
+        };
+      });
+    </script>
+
+    <div id="main">
+        <div id="title">
+            <h1 strong id="titleHeading">Vociferate</h1>
+        </div>
+        <div id="inputArea">
+            <div id="sentenceArea">
+                <p>Sentences:</p>
+                <textarea rows=10 cols=100 id="sentences"></textarea>
+            </div>
+            <div id="submitArea">
+                <button id="sentenceSubmit" class="button">Speak</button>
+                <p>&emsp;</p>
+                <p id="warningBox"></p>
+            </div>
+        </div>
+    </div>
 </Layout>
+
+<style>
+p, button, textarea {
+    font-family: Verdana, Tahoma, Helvetica, Arial, sans-serif;
+}
+
+p {
+    color: white;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: fit-content;
+}
+
+#inputArea {
+    border: 2px solid rgba(155, 141, 247, 1);
+    padding: 1em;
+    border-radius: 1em;
+}
+
+#submitArea {
+    margin: 1em;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+#titleHeading {
+    background: linear-gradient(90deg,rgba(155, 141, 247, 1) 25%, rgba(184, 92, 255, 1) 75%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-size: 10em;
+    padding: 0px;
+    margin: 0px;
+}
+
+#sentenceSubmit {
+    cursor: pointer;
+    padding: .8em 1.2em;
+    border: 2px solid;
+    border-radius: 2em;
+    text-align: centre;
+    background-image: linear-gradient(90deg,rgba(155, 141, 247, 1) 25%, rgba(184, 92, 255, 1) 75%);
+    color: white;
+    font-size: inherit;
+}
+
+</style>
